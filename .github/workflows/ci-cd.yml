@@ -1,0 +1,40 @@
+name: CouchDB Setup
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      EC2_INSTANCE: ec2-user@ec2-3-253-26-141.eu-west-1.compute.amazonaws.com
+      SSH_OPTIONS: -o StrictHostKeyChecking=no -i
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install CouchDB
+        run: .github/scripts/install-couchdb.sh
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: SSH into EC2 Instance and Configure CouchDB
+        run: .github/scripts/copy-config.sh
+        env:
+          EC2_INSTANCE: ${{ env.EC2_INSTANCE }}
+          SSH_OPTIONS: ${{ env.SSH_OPTIONS }}
+          SSH_PRIVATE_KEY: ${{ env.SSH_PRIVATE_KEY }}
+
+      - name: Manage Service
+        run: .github/scripts/manage-service.sh
+        env:
+          EC2_INSTANCE: ${{ env.EC2_INSTANCE }}
+          SSH_OPTIONS: ${{ env.SSH_OPTIONS }}
