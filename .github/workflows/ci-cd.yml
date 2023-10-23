@@ -18,6 +18,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Set execute permissions on scripts
+        run: chmod +x .github/scripts/*.sh
+
       - name: Install CouchDB
         run: .github/scripts/install-couchdb.sh
 
